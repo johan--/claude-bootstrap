@@ -4,7 +4,50 @@
 
 For building autonomous AI agents that perform multi-step tasks with tools.
 
-**Sources:** [Anthropic Claude Code Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices) | [Google Gemini Agent Development](https://developers.googleblog.com/en/building-agents-google-gemini-open-source-frameworks/) | [OpenAI Building Agents](https://developers.openai.com/tracks/building-agents/)
+**Sources:** [Anthropic Claude Code Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices) | [Google Gemini Agent Development](https://developers.googleblog.com/en/building-agents-google-gemini-open-source-frameworks/) | [OpenAI Building Agents](https://developers.openai.com/tracks/building-agents/) | [Pydantic AI](https://ai.pydantic.dev/)
+
+---
+
+## Framework Selection by Language
+
+| Language | Default Framework | Why |
+|----------|-------------------|-----|
+| **Python** | **Pydantic AI** | Type-safe, Pydantic validation, multi-model, production-ready |
+| **TypeScript** | Vercel AI SDK | Streaming, React integration, edge-ready |
+| **TypeScript (OpenAI)** | OpenAI Agents SDK | Native tool use, structured outputs |
+
+### Python: Pydantic AI (Default)
+```python
+from pydantic_ai import Agent
+from pydantic import BaseModel
+
+class SearchResult(BaseModel):
+    title: str
+    url: str
+    summary: str
+
+agent = Agent(
+    'claude-sonnet-4-20250514',
+    result_type=list[SearchResult],
+    system_prompt='You are a research assistant.',
+)
+
+# Type-safe result
+result = await agent.run('Find articles about AI agents')
+for item in result.data:
+    print(f"{item.title}: {item.url}")
+```
+
+### TypeScript: Vercel AI SDK
+```typescript
+import { generateText } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
+
+const result = await generateText({
+  model: anthropic('claude-sonnet-4-20250514'),
+  prompt: 'Research AI agent patterns',
+});
+```
 
 ---
 
@@ -486,6 +529,181 @@ describe('Agent Accuracy (Eval)', () => {
     expect(await runTests(testCase.testCommand)).toBe(true);
   }, 120000);
 });
+```
+
+---
+
+## Pydantic AI Patterns (Python Default)
+
+### Project Structure (Python)
+```
+project/
+├── src/
+│   ├── agents/
+│   │   ├── __init__.py
+│   │   ├── researcher.py       # Research agent
+│   │   ├── coder.py            # Coding agent
+│   │   └── orchestrator.py     # Main coordinator
+│   ├── tools/
+│   │   ├── __init__.py
+│   │   ├── web.py              # Web search tools
+│   │   ├── files.py            # File operations
+│   │   └── database.py         # DB queries
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── schemas.py          # Pydantic models
+│   └── deps.py                 # Dependencies
+├── tests/
+│   ├── test_agents.py
+│   └── test_tools.py
+└── pyproject.toml
+```
+
+### Agent with Tools
+```python
+from pydantic_ai import Agent, RunContext
+from pydantic import BaseModel
+from httpx import AsyncClient
+
+class SearchResult(BaseModel):
+    title: str
+    url: str
+    snippet: str
+
+class ResearchDeps(BaseModel):
+    http_client: AsyncClient
+    api_key: str
+
+research_agent = Agent(
+    'claude-sonnet-4-20250514',
+    deps_type=ResearchDeps,
+    result_type=list[SearchResult],
+    system_prompt='You are a research assistant. Use tools to find information.',
+)
+
+@research_agent.tool
+async def web_search(ctx: RunContext[ResearchDeps], query: str) -> list[dict]:
+    """Search the web for information."""
+    response = await ctx.deps.http_client.get(
+        'https://api.search.com/search',
+        params={'q': query},
+        headers={'Authorization': f'Bearer {ctx.deps.api_key}'},
+    )
+    return response.json()['results']
+
+@research_agent.tool
+async def read_webpage(ctx: RunContext[ResearchDeps], url: str) -> str:
+    """Read and extract content from a webpage."""
+    response = await ctx.deps.http_client.get(url)
+    return response.text[:5000]  # Truncate for context
+
+# Usage
+async def main():
+    async with AsyncClient() as client:
+        deps = ResearchDeps(http_client=client, api_key='...')
+        result = await research_agent.run(
+            'Find recent articles about LLM agents',
+            deps=deps,
+        )
+        for item in result.data:
+            print(f"- {item.title}")
+```
+
+### Structured Output with Validation
+```python
+from pydantic import BaseModel, Field
+from pydantic_ai import Agent
+
+class CodeReview(BaseModel):
+    summary: str = Field(description="Brief summary of the review")
+    issues: list[str] = Field(description="List of issues found")
+    suggestions: list[str] = Field(description="Improvement suggestions")
+    approval: bool = Field(description="Whether code is approved")
+    confidence: float = Field(ge=0, le=1, description="Confidence score")
+
+review_agent = Agent(
+    'claude-sonnet-4-20250514',
+    result_type=CodeReview,
+    system_prompt='Review code for quality, security, and best practices.',
+)
+
+# Result is validated Pydantic model
+result = await review_agent.run(f"Review this code:\n```python\n{code}\n```")
+if result.data.approval:
+    print("Code approved!")
+else:
+    for issue in result.data.issues:
+        print(f"Issue: {issue}")
+```
+
+### Multi-Agent Coordination
+```python
+from pydantic_ai import Agent
+
+# Specialized agents
+planner = Agent('claude-sonnet-4-20250514', system_prompt='Create detailed plans.')
+executor = Agent('claude-sonnet-4-20250514', system_prompt='Execute tasks precisely.')
+reviewer = Agent('claude-sonnet-4-20250514', system_prompt='Review and verify work.')
+
+async def orchestrate(task: str):
+    # 1. Plan
+    plan = await planner.run(f"Create a plan for: {task}")
+
+    # 2. Execute each step
+    results = []
+    for step in plan.data.steps:
+        result = await executor.run(f"Execute: {step}")
+        results.append(result.data)
+
+    # 3. Review
+    review = await reviewer.run(
+        f"Review the results:\nTask: {task}\nResults: {results}"
+    )
+
+    return review.data
+```
+
+### Streaming Responses
+```python
+from pydantic_ai import Agent
+
+agent = Agent('claude-sonnet-4-20250514')
+
+async def stream_response(prompt: str):
+    async with agent.run_stream(prompt) as response:
+        async for chunk in response.stream():
+            print(chunk, end='', flush=True)
+
+    # Get final structured result
+    result = await response.get_data()
+    return result
+```
+
+### Testing Agents
+```python
+import pytest
+from pydantic_ai import Agent
+from pydantic_ai.models.test import TestModel
+
+@pytest.fixture
+def test_agent():
+    return Agent(
+        TestModel(),  # Mock model for testing
+        result_type=str,
+    )
+
+async def test_agent_response(test_agent):
+    result = await test_agent.run('Test prompt')
+    assert result.data is not None
+
+# Test with specific responses
+async def test_with_mock_response():
+    model = TestModel()
+    model.seed_response('Expected output')
+
+    agent = Agent(model)
+    result = await agent.run('Any prompt')
+    assert result.data == 'Expected output'
 ```
 
 ---
