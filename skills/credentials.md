@@ -77,6 +77,7 @@ Use these patterns to identify keys in the file:
 | Twilio | `SK*` + Account SID | `TWILIO_API_KEY`, `TWILIO_ACCOUNT_SID` |
 | SendGrid | `SG.*` | `SENDGRID_API_KEY` |
 | AWS | `AKIA*` + secret | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
+| PostHog | `phc_*` | `POSTHOG_API_KEY`, `NEXT_PUBLIC_POSTHOG_KEY` |
 
 ---
 
@@ -105,6 +106,7 @@ def parse_credentials_file(file_path: str) -> dict[str, str]:
         'STRIPE_SECRET_KEY': r'sk_(live|test)_[A-Za-z0-9]+',
         'STRIPE_PUBLISHABLE_KEY': r'pk_(live|test)_[A-Za-z0-9]+',
         'STRIPE_WEBHOOK_SECRET': r'whsec_[A-Za-z0-9]+',
+        'POSTHOG_API_KEY': r'phc_[A-Za-z0-9]+',
     }
 
     # Supabase requires special handling (URL + JWT tokens)
@@ -146,6 +148,11 @@ function parseCredentialsFile(content: string): Record<string, string> {
     RENDER_API_KEY: /rnd_[A-Za-z0-9]+/,
     REPLICATE_API_TOKEN: /r8_[A-Za-z0-9]+/,
     ELEVEN_LABS_API_KEY: /sk_[a-f0-9]{40,}/,
+    GITHUB_TOKEN: /ghp_[A-Za-z0-9]+|github_pat_[A-Za-z0-9_]+/,
+    STRIPE_SECRET_KEY: /sk_(live|test)_[A-Za-z0-9]+/,
+    STRIPE_PUBLISHABLE_KEY: /pk_(live|test)_[A-Za-z0-9]+/,
+    STRIPE_WEBHOOK_SECRET: /whsec_[A-Za-z0-9]+/,
+    POSTHOG_API_KEY: /phc_[A-Za-z0-9]+/,
   };
 
   for (const [envVar, pattern] of Object.entries(patterns)) {
