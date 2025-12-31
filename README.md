@@ -110,7 +110,7 @@ Define before you build:
 2. **Atomic todos** with validation criteria and test cases
 3. **Move, don't delete** - Completed todos go to `completed.md` for reference
 
-## Skills Included (28 Skills)
+## Skills Included (31 Skills)
 
 ### Core Skills
 | Skill | Purpose |
@@ -167,6 +167,9 @@ Define before you build:
 | `reddit-api.md` | Reddit API with PRAW (Python) and Snoowrap (Node.js) |
 | `posthog-analytics.md` | PostHog analytics, event tracking, feature flags, project-specific dashboards |
 | `shopify-apps.md` | Shopify app development - Remix, Admin API, checkout extensions, GDPR compliance |
+| `woocommerce.md` | WooCommerce REST API - products, orders, customers, webhooks |
+| `medusa.md` | Medusa headless commerce - modules, workflows, API routes, admin UI |
+| `klaviyo.md` | Klaviyo email/SMS marketing - profiles, events, flows, segmentation |
 
 ## Usage Patterns
 
