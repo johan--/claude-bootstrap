@@ -375,16 +375,115 @@ All work is tracked with validation, test cases, and **TDD execution logs**:
 | VALIDATE | `npm run lint && npm test -- --coverage` | Pass ✓ |
 ```
 
+## Error Handling in Loops
+
+**Not all failures are equal. Claude classifies errors before iterating:**
+
+| Error Type | Examples | Claude Fixes? | Action |
+|------------|----------|---------------|--------|
+| **Code Error** | Logic bug, wrong assertion | ✅ Yes | Continue loop |
+| **Access Error** | Missing API key, DB refused | ❌ No | Stop + report |
+| **Environment Error** | Missing package, wrong version | ❌ No | Stop + report |
+
+**When Claude hits an access/environment error:**
+
+```
+🛑 LOOP BLOCKED - Human Action Required
+
+Error: ECONNREFUSED 127.0.0.1:5432
+
+Required Actions:
+1. Start PostgreSQL: brew services start postgresql
+2. Verify connection: psql -U postgres -c "SELECT 1"
+3. Check DATABASE_URL in .env
+
+After fixing, run /ralph-loop again.
+```
+
+**Common blockers and fixes:**
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `ECONNREFUSED :5432` | PostgreSQL not running | `brew services start postgresql` |
+| `ECONNREFUSED :6379` | Redis not running | `brew services start redis` |
+| `401 Unauthorized` | Bad API key | Check `.env` file |
+| `MODULE_NOT_FOUND` | Missing package | `npm install` |
+
+---
+
+## FAQ
+
+### How is this different from just using Claude Code?
+
+Claude Code is powerful but unpredictable without guardrails. Claude Bootstrap adds:
+- **TDD enforcement** - Tests must fail before implementation
+- **Automatic iteration** - Loops until tests pass, not one-shot
+- **Error classification** - Knows when to stop and ask for help
+- **Complexity limits** - Hard caps prevent unmaintainable code
+
+### Do I need to manually run `/ralph-loop` every time?
+
+No. With Claude Bootstrap skills loaded, Claude **automatically** transforms your requests into iterative TDD loops. Just say "add email validation" and it loops until tests pass.
+
+### What if I don't want a loop for something?
+
+Use opt-out phrases:
+- "Just explain..." → explanation only
+- "Quick fix..." → one-liner
+- "Don't loop..." → explicit opt-out
+
+### What if the loop runs forever?
+
+Three safety mechanisms:
+1. **`--max-iterations`** - Hard limit (default 20-30)
+2. **Error classification** - Stops on access/environment errors
+3. **Blocker detection** - Reports when stuck and needs human help
+
+### Does this work with existing projects?
+
+Yes. Run `/initialize-project` in any directory. It adds skills without breaking existing config.
+
+### What about test coverage?
+
+Minimum 80% coverage enforced. CI blocks PRs below threshold.
+
+### How do I update skills?
+
+```bash
+cd ~/.claude-bootstrap
+git pull
+./install.sh
+```
+
+Then run `/initialize-project` in your project to get latest skills.
+
+### Can I customize the skills?
+
+Yes. Skills are markdown files in `.claude/skills/`. Edit or add your own.
+
+### What languages/frameworks are supported?
+
+| Category | Supported |
+|----------|-----------|
+| Languages | TypeScript, Python |
+| Frontend | React, Next.js, React Native |
+| Backend | Node.js, Express, FastAPI |
+| Database | Supabase, PostgreSQL, Drizzle, Prisma |
+| E-commerce | Shopify, WooCommerce, Medusa |
+| Marketing | Klaviyo, PostHog |
+
+---
+
 ## Comparison
 
 | Feature | Other Tools | Claude Bootstrap |
 |---------|-------------|------------------|
 | **Testing** | Optional, often skipped | TDD mandatory - tests fail first |
+| **Iteration** | One-shot | Loops until tests pass |
 | **Bug Fixes** | Jump to fix | Test gap analysis → failing test → fix |
+| **Error Handling** | Loop forever | Classifies errors, stops on blockers |
 | **Security** | Rarely covered | First-class with CI enforcement |
 | **Complexity** | Vague guidance | Hard limits (20 lines/function, 200/file) |
-| **Todos** | Basic tasks | Atomic with TDD execution logs |
-| **Validation** | Manual | Automated: lint + typecheck + coverage |
 
 ## Contributing
 
