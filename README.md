@@ -229,7 +229,7 @@ Define before you build:
 2. **Atomic todos** with validation criteria and test cases
 3. **Move, don't delete** - Completed todos go to `completed.md` for reference
 
-## Skills Included (36 Skills)
+## Skills Included (37 Skills)
 
 ### Core Skills
 | Skill | Purpose |
@@ -289,6 +289,7 @@ Define before you build:
 |-------|---------|
 | `web-payments.md` | Stripe Checkout, subscriptions, webhooks, customer portal |
 | `reddit-api.md` | Reddit API with PRAW (Python) and Snoowrap (Node.js) |
+| `reddit-ads.md` | Reddit Ads API - campaigns, ad groups, ads, targeting, conversions, custom audiences |
 | `posthog-analytics.md` | PostHog analytics, event tracking, feature flags, project-specific dashboards |
 | `shopify-apps.md` | Shopify app development - Remix, Admin API, checkout extensions, GDPR compliance |
 | `woocommerce.md` | WooCommerce REST API - products, orders, customers, webhooks |
@@ -503,6 +504,7 @@ Yes. Skills are markdown files in `.claude/skills/`. Edit or add your own.
 | Database | Supabase, PostgreSQL, Drizzle, Prisma |
 | Web Tech | PWA (Service Workers, Workbox, Offline-First) |
 | E-commerce | Shopify, WooCommerce, Medusa |
+| Advertising | Reddit Ads API (campaigns, targeting, conversions) |
 | Marketing | Klaviyo, PostHog |
 
 ---
