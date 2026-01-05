@@ -567,3 +567,7 @@ MIT - See [LICENSE](LICENSE)
 ## Credits
 
 Built on learnings from 100+ projects across customer experience management, agentic AI platforms, mobile apps, and full-stack web applications.
+
+---
+
+**Need help with your AI initiatives?** [www.leanai.ventures](https://www.leanai.ventures)
